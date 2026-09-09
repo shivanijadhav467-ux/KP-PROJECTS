@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Sthal",
+      "hasCanvas": false,
+      "bodyTextLen": 1695,
+      "bodyTextHash": "d9c7551043e4baf08886769973198955f270d02d93295072c13b41e3d39c7b9f",
+      "bodyTextPrefix": "Sthal Civil site monitoring Today Sites Daily reports Issues FIE",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Sthal",
+      "hasCanvas": false,
+      "bodyTextLen": 1624,
+      "bodyTextHash": "055b6807531fd298e755972c26416f45ece5d6746849a59f2eb03267a701c17c",
+      "bodyTextPrefix": "Sthal मराठी MON, 31 AUG Site log Log today's DPR What needs atte",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}
