@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, MapPin } from "lucide-react";
 import { AddDprDialog, AddIssueDialog } from "@/components/forms";
@@ -15,16 +16,33 @@ import { materialBalance, siteProgress, useSthal } from "@/lib/store";
 export const Route = createFileRoute("/sites/$siteId")({ component: SiteDetail });
 
 function SiteDetail() {
-  const { siteId } = Route.useParams();
-  const lang = useSthal((s) => s.lang);
-  const site = useSthal((s) => s.sites.find((x) => x.id === siteId));
-  const work = useSthal((s) => s.work.filter((w) => w.siteId === siteId));
-  const materials = useSthal((s) => s.materials.filter((m) => m.siteId === siteId));
-  const dprs = useSthal((s) => s.dprs.filter((d) => d.siteId === siteId));
-  const issues = useSthal((s) => s.issues.filter((i) => i.siteId === siteId));
-  const quality = useSthal((s) => s.quality.filter((q) => q.siteId === siteId));
-  const safety = useSthal((s) => s.safety.filter((x) => x.siteId === siteId));
-  const labor = useSthal((s) => s.labor.filter((l) => l.siteId === siteId));
+ const work = useSthal(
+  useShallow((s) => s.work.filter((w) => w.siteId === siteId))
+);
+
+const materials = useSthal(
+  useShallow((s) => s.materials.filter((m) => m.siteId === siteId))
+);
+
+const dprs = useSthal(
+  useShallow((s) => s.dprs.filter((d) => d.siteId === siteId))
+);
+
+const issues = useSthal(
+  useShallow((s) => s.issues.filter((i) => i.siteId === siteId))
+);
+
+const quality = useSthal(
+  useShallow((s) => s.quality.filter((q) => q.siteId === siteId))
+);
+
+const safety = useSthal(
+  useShallow((s) => s.safety.filter((x) => x.siteId === siteId))
+);
+
+const labor = useSthal(
+  useShallow((s) => s.labor.filter((l) => l.siteId === siteId))
+);
   const [dprOpen, setDprOpen] = useState(false);
   const [issueOpen, setIssueOpen] = useState(false);
 
@@ -104,7 +122,7 @@ function SiteDetail() {
           <TabsTrigger value="work">{t(lang, "work")}</TabsTrigger>
           <TabsTrigger value="dpr">{t(lang, "dpr")}</TabsTrigger>
           <TabsTrigger value="materials">{t(lang, "materials")}</TabsTrigger>
-          <TabsTrigger value="labor">{t(lang, "labor")}</TabsTrigger>
+      <TabsTrigger value="labor">{t(lang, "labor")}</TabsTrigger>
           <TabsTrigger value="quality">{t(lang, "quality")}</TabsTrigger>
           <TabsTrigger value="safety">{t(lang, "safety")}</TabsTrigger>
           <TabsTrigger value="issues">{t(lang, "issues")}</TabsTrigger>
