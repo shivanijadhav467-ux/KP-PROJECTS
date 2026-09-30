@@ -16,6 +16,7 @@ import { materialBalance, siteProgress, useSthal } from "@/lib/store";
 export const Route = createFileRoute("/sites/$siteId")({ component: SiteDetail });
 
 function SiteDetail() {
+  const { siteId } = Route.useParams();
  const work = useSthal(
   useShallow((s) => s.work.filter((w) => w.siteId === siteId))
 );
@@ -92,6 +93,7 @@ const labor = useSthal(
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setIssueOpen(true)}>
                 {t(lang, "addIssue")}
+
               </Button>
               <Button onClick={() => setDprOpen(true)}>{t(lang, "logDpr")}</Button>
             </div>
