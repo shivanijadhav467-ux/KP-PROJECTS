@@ -13,15 +13,24 @@ import { t } from "@/lib/i18n";
 import { siteLocation, siteName, siteType } from "@/lib/names";
 import { siteProgress, useSthal } from "@/lib/store";
 
-export const Route = createFileRoute("/sites/")({ component: SitesPage });
+export const Route = createFileRoute("/sites/")({
+  component: SitesPage,
+});
 
 function SitesPage() {
   const lang = useSthal((s) => s.lang);
   const sites = useSthal((s) => s.sites);
   const work = useSthal((s) => s.work);
+  const deleteSite = useSthal((s) => s.deleteSite);
   const siteFilter = useSthal((s) => s.siteFilter);
+
   const [open, setOpen] = useState(false);
-  const list = siteFilter === "all" ? sites : sites.filter((s) => s.id === siteFilter);
+  const [editSite, setEditSite] = useState<Site | null>(null);
+
+  const list =
+    siteFilter === "all"
+      ? sites
+      : sites.filter((s) => s.id === siteFilter);
 
   return (
     <div>
@@ -35,6 +44,7 @@ function SitesPage() {
           </Button>
         }
       />
+
       {list.length === 0 ? (
         <EmptyState
           icon={<Building2 className="size-8" />}
@@ -51,48 +61,107 @@ function SitesPage() {
           {list.map((site) => {
             const pct = siteProgress(work, site.id);
             const left = daysUntil(site.targetDate);
+
             return (
-              <Link key={site.id} to="/sites/$siteId" params={{ siteId: site.id }} className="group">
-                <Card className="overflow-hidden transition-[box-shadow] duration-150 hover:shadow-[var(--shadow-border-hover)]">
-                  <div className="relative aspect-16/9 overflow-hidden bg-sheet">
-                    <img
-                      src={site.image}
-                      alt=""
-                      className="size-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
-                    />
-                    <div className="absolute top-3 left-3">
-                      <SiteStatusBadge status={site.status} lang={lang} />
+              <div key={site.id}>
+                <Link
+                  to="/sites/$siteId"
+                  params={{ siteId: site.id }}
+                  className="group block"
+                >
+                  <Card className="overflow-hidden transition-[box-shadow] duration-150 hover:shadow-[var(--shadow-border-hover)]">
+                    <div className="relative aspect-16/9 overflow-hidden bg-sheet">
+                      <img
+                        src={site.image}
+                        alt=""
+                        className="size-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
+                      />
+
+                      <div className="absolute top-3 left-3">
+                        <SiteStatusBadge
+                          status={site.status}
+                          lang={lang}
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <div className="p-4">
-                    <h2 className="font-display text-lg font-semibold tracking-tight">
-                      {siteName(site, lang)}
-                    </h2>
-                    <p className="mt-1 flex items-center gap-1 text-sm text-muted">
-                      <MapPin className="size-3.5" />
-                      {siteLocation(site, lang)}
-                    </p>
-                    <p className="mt-1 text-xs text-subtle">{siteType(site, lang)}</p>
-                    <div className="mt-4 flex items-center justify-between text-sm">
-                      <span className="text-muted">{t(lang, "progress")}</span>
-                      <span className="font-mono tabular-nums">{pct}%</span>
+
+                    <div className="p-4">
+                      <h2 className="font-display text-lg font-semibold tracking-tight">
+                        {siteName(site, lang)}
+                      </h2>
+
+                      <p className="mt-1 flex items-center gap-1 text-sm text-muted">
+                        <MapPin className="size-3.5" />
+                        {siteLocation(site, lang)}
+                      </p>
+
+                      <p className="mt-1 text-xs text-subtle">
+                        {siteType(site, lang)}
+                      </p>
+
+                      <div className="mt-4 flex items-center justify-between text-sm">
+                        <span className="text-muted">
+                          {t(lang, "progress")}
+                        </span>
+
+                        <span className="font-mono tabular-nums">
+                          {pct}%
+                        </span>
+                      </div>
+
+                      <Progress value={pct} className="mt-2" />
+
+                      <p className="mt-3 text-xs text-subtle">
+                        {t(lang, "target")}{" "}
+                        {formatDate(site.targetDate, lang)}
+                        {" · "}
+                        {left >= 0
+                          ? `${left} ${t(lang, "daysLeft")}`
+                          : `${Math.abs(left)} ${t(lang, "delayedBy")}`}
+                      </p>
                     </div>
-                    <Progress value={pct} className="mt-2" />
-                    <p className="mt-3 text-xs text-subtle">
-                      {t(lang, "target")} {formatDate(site.targetDate, lang)}
-                      {" · "}
-                      {left >= 0
-                        ? `${left} ${t(lang, "daysLeft")}`
-                        : `${Math.abs(left)} ${t(lang, "delayedBy")}`}
-                    </p>
-                  </div>
-                </Card>
-              </Link>
+                  </Card>
+                </Link>
+
+                <div className="mt-2 flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      setEditSite(site);
+                    }}
+                  >
+                    Edit
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      if (
+                        confirm(
+                          "Delete this site and all related data?"
+                        )
+                      ) {
+                        deleteSite(site.id);
+                      }
+                    }}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </div>
             );
           })}
         </div>
       )}
-      <AddSiteDialog open={open} onOpenChange={setOpen} />
+
+      <AddSiteDialog
+        open={open}
+        onOpenChange={setOpen}
+        editSite={editSite}
+        onEditSiteChange={setEditSite}
+      />
     </div>
   );
 }

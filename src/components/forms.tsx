@@ -20,6 +20,7 @@ import type {
   QualityResult,
   SafetySeverity,
   SafetyType,
+  Site,
   SiteStatus,
   Weather,
 } from "@/lib/types";
@@ -34,15 +35,46 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-export function AddSiteDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
-  const lang = useSthal((s) => s.lang);
+export function AddSiteDialog({
+  open,
+  onOpenChange,
+  editSite,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  editSite?: Site | null;
+}) {
   const addSite = useSthal((s) => s.addSite);
+  const lang = useSthal((s) => s.lang);
+  const updateSite = useSthal((s) => s.updateSite);
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const name = String(fd.get("name") ?? "").trim();
     if (!name) return;
+    if (editSite) {
+  updateSite(editSite.id, {
+    name,
+    nameMr: name,
+    location: String(fd.get("location") ?? ""),
+    locationMr: String(fd.get("location") ?? ""),
+    client: String(fd.get("client") ?? ""),
+    contractor: String(fd.get("contractor") ?? ""),
+    type: String(fd.get("type") ?? ""),
+    typeMr: String(fd.get("type") ?? ""),
+    status: String(fd.get("status") ?? "active") as SiteStatus,
+    startDate: String(fd.get("start") ?? todayISO()),
+    targetDate: String(fd.get("target") ?? todayISO()),
+    engineer: String(fd.get("engineer") ?? ""),
+    scope: String(fd.get("scope") ?? ""),
+    scopeMr: String(fd.get("scope") ?? ""),
+  });
+
+  toast.success(t(lang, "saved"));
+  onOpenChange(false);
+  return;
+}
     const id = uid("s");
     addSite({
       id,

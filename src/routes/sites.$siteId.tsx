@@ -17,6 +17,8 @@ export const Route = createFileRoute("/sites/$siteId")({ component: SiteDetail }
 
 function SiteDetail() {
   const { siteId } = Route.useParams();
+  const site = useSthal((s) => s.sites.find((s) => s.id === siteId));
+  const lang = useSthal((s) => s.lang);
  const work = useSthal(
   useShallow((s) => s.work.filter((w) => w.siteId === siteId))
 );

@@ -26,6 +26,8 @@ type Store = AppData & {
   setSiteFilter: (id: SiteFilter) => void;
   resetSample: () => void;
   addSite: (site: Site) => void;
+  updateSite: (id: string, patch: Partial<Site>) => void; 
+  deleteSite: (id: string) => void;
   addDpr: (dpr: Dpr) => void;
   addIssue: (issue: Issue) => void;
   updateIssue: (id: string, patch: Partial<Issue>) => void;
@@ -53,6 +55,24 @@ export const useSthal = create<Store>()(
       setSiteFilter: (siteFilter) => set({ siteFilter }),
       resetSample: () => set({ ...cloneSample() }),
       addSite: (site) => set((s) => ({ sites: [site, ...s.sites] })),
+      updateSite: (id, patch) =>
+      set((s) => ({
+    sites: s.sites.map((site) =>
+      site.id === id ? { ...site, ...patch } : site
+    ),
+  })),
+
+  deleteSite: (id) =>
+  set((s) => ({
+    sites: s.sites.filter((site) => site.id !== id),
+    dprs: s.dprs.filter((x) => x.siteId !== id),
+    issues: s.issues.filter((x) => x.siteId !== id),
+    materials: s.materials.filter((x) => x.siteId !== id),
+    quality: s.quality.filter((x) => x.siteId !== id),
+    safety: s.safety.filter((x) => x.siteId !== id),
+    labor: s.labor.filter((x) => x.siteId !== id),
+    work: s.work.filter((x) => x.siteId !== id),
+  })),
       addDpr: (dpr) => set((s) => ({ dprs: [dpr, ...s.dprs] })),
       addIssue: (issue) => set((s) => ({ issues: [issue, ...s.issues] })),
       updateIssue: (id, patch) =>
