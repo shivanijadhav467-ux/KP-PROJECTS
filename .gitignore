@@ -1,2 +1,5 @@
 /.grok
-/.node_modules.lock
+/.node_modules.lock.vercel/
+.vercel/
+node_modules/
+node_modules/
