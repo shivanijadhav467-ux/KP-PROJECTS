@@ -1,548 +1,152 @@
 import { useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, MapPin } from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
 
-import { AddDprDialog, AddIssueDialog } from "@/components/forms";
-import {
-  IssueStatusBadge,
-  IssueTone,
-  QualityBadge,
-  SafetyTypeBadge,
-  SiteStatusBadge,
-} from "@/components/status-badge";
+import { AddSiteDialog } from "@/components/forms";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { SiteStatusBadge } from "@/components/status-badge";
+
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import { daysUntil, formatDate, formatNumber } from "@/lib/format";
+  siteLocation,
+  siteName,
+  siteType,
+} from "@/lib/names";
+
 import { t } from "@/lib/i18n";
-import { siteLocation, siteName, siteType } from "@/lib/names";
-import { materialBalance, siteProgress, useSthal } from "@/lib/store";
+import { useSthal } from "@/lib/store";
 
 export const Route = createFileRoute("/sites/")({
-  component: SiteDetail,
+  component: SitesPage,
 });
 
-function SiteDetail() {
-  const { siteId } = Route.useParams();
-
+function SitesPage() {
   const lang = useSthal((s) => s.lang);
-
-  const site = useSthal((s) =>
-    s.sites.find((x) => x.id === siteId)
-  );
-
-  const updateSite = useSthal((s) => s.updateSite);
+  const sites = useSthal((s) => s.sites);
   const deleteSite = useSthal((s) => s.deleteSite);
 
-  const work = useSthal((s) =>
-    s.work.filter((w) => w.siteId === siteId)
-  );
-
-  const materials = useSthal((s) =>
-    s.materials.filter((m) => m.siteId === siteId)
-  );
-
-  const dprs = useSthal((s) =>
-    s.dprs.filter((d) => d.siteId === siteId)
-  );
-
-  const issues = useSthal((s) =>
-    s.issues.filter((i) => i.siteId === siteId)
-  );
-
-  const quality = useSthal((s) =>
-    s.quality.filter((q) => q.siteId === siteId)
-  );
-
-  const safety = useSthal((s) =>
-    s.safety.filter((x) => x.siteId === siteId)
-  );
-
-  const labor = useSthal((s) =>
-    s.labor.filter((l) => l.siteId === siteId)
-  );
-
-  const [dprOpen, setDprOpen] = useState(false);
-  const [issueOpen, setIssueOpen] = useState(false);
-
-  if (!site) {
-    return (
-      <div className="py-16 text-center">
-        <p className="text-muted">
-          {t(lang, "noneMatch")}
-        </p>
-
-        <Link
-          to="/sites"
-          className="mt-3 inline-block text-sm text-primary hover:underline"
-        >
-          {t(lang, "back")}
-        </Link>
-      </div>
-    );
-  }
-
-  const pct = siteProgress(work, site.id);
-  const left = daysUntil(site.targetDate);
-  const scope =
-    lang === "mr" ? site.scopeMr : site.scope;
+  const [siteOpen, setSiteOpen] = useState(false);
+  const [editSite, setEditSite] = useState<any>(null);
 
   return (
     <div>
-      <Link
-        to="/sites"
-        className="mb-4 inline-flex h-11 items-center gap-1 text-sm text-muted hover:text-ink"
-      >
-        <ArrowLeft className="size-4" />
-        {t(lang, "sites")}
-      </Link>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="font-display text-2xl font-semibold">
+            {t(lang, "sites")}
+          </h1>
 
-      <div className="overflow-hidden rounded-xl bg-surface shadow-[var(--shadow-border)]">
-        <div className="relative h-44 overflow-hidden bg-sheet md:h-56">
-          <img
-            src={site.image}
-            alt=""
-            className="size-full object-cover"
-          />
+          <p className="mt-1 text-sm text-muted">
+            Construction sites
+          </p>
         </div>
 
-        <div className="p-5">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="font-display text-2xl font-semibold tracking-tight">
-                  {siteName(site, lang)}
-                </h1>
+        <Button onClick={() => setSiteOpen(true)}>
+          + New Site
+        </Button>
+      </div>
 
-                <SiteStatusBadge
-                  status={site.status}
-                  lang={lang}
+      {sites.length === 0 ? (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <p className="text-muted">
+              {t(lang, "noneMatch")}
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {sites.map((site) => (
+            <Card
+              key={site.id}
+              className="overflow-hidden"
+            >
+              <div className="h-40 overflow-hidden bg-sheet">
+                <img
+                  src={site.image}
+                  alt=""
+                  className="size-full object-cover"
                 />
               </div>
 
-              <p className="mt-1 flex items-center gap-1 text-sm text-muted">
-                <MapPin className="size-3.5" />
-                {siteLocation(site, lang)} ·{" "}
-                {siteType(site, lang)}
-              </p>
-            </div>
-
-            {/* ACTION BUTTONS */}
-            <div className="flex flex-wrap gap-2">
-              <button
-              type="button"
-              onClick={() => {
-              alert("EDIT WORKING");
-            }}
-               className="rounded-md border px-4 py-2 text-sm"
-            >
-            Edit
-            </button>
-
-              <Button
-                variant="outline"
-                onClick={() => {
-                  const ok = confirm(
-                    "Delete this site?"
-                  );
-
-                  if (ok) {
-                    deleteSite(site.id);
-                    window.location.href = "/sites";
-                  }
-                }}
-              >
-                Delete
-              </Button>
-
-              <Button
-                variant="outline"
-                onClick={() => setIssueOpen(true)}
-              >
-                {t(lang, "addIssue")}
-              </Button>
-
-              <Button
-                onClick={() => setDprOpen(true)}
-              >
-                {t(lang, "logDpr")}
-              </Button>
-            </div>
-          </div>
-
-          <p className="mt-4 text-sm text-muted">
-            {scope}
-          </p>
-
-          <div className="mt-4 flex items-center gap-3">
-            <Progress
-              value={pct}
-              className="flex-1"
-            />
-
-            <span className="font-mono text-sm tabular-nums">
-              {pct}%
-            </span>
-          </div>
-
-          <p className="mt-2 text-xs text-muted">
-            {left >= 0
-              ? `${left} days remaining`
-              : `${Math.abs(left)} days overdue`}
-          </p>
-        </div>
-      </div>
-
-      <Tabs defaultValue="work" className="mt-6">
-        <TabsList>
-          <TabsTrigger value="work">
-            {t(lang, "work")}
-          </TabsTrigger>
-
-          <TabsTrigger value="dpr">
-            {t(lang, "dpr")}
-          </TabsTrigger>
-
-          <TabsTrigger value="materials">
-            {t(lang, "materials")}
-          </TabsTrigger>
-
-          <TabsTrigger value="labor">
-            {t(lang, "labor")}
-          </TabsTrigger>
-
-          <TabsTrigger value="quality">
-            {t(lang, "quality")}
-          </TabsTrigger>
-
-          <TabsTrigger value="safety">
-            {t(lang, "safety")}
-          </TabsTrigger>
-
-          <TabsTrigger value="issues">
-            {t(lang, "issues")}
-          </TabsTrigger>
-        </TabsList>
-
-        {/* WORK */}
-        <TabsContent value="work">
-          <Card>
-            <CardContent className="overflow-x-auto p-0">
-              <table className="w-full text-sm">
-                <thead className="text-left text-xs tracking-wide text-muted">
-                  <tr className="border-b border-border">
-                    <th className="px-5 py-3 font-medium">
-                      {t(lang, "name")}
-                    </th>
-
-                    <th className="px-5 py-3 font-medium">
-                      {t(lang, "unit")}
-                    </th>
-
-                    <th className="px-5 py-3 text-right font-medium">
-                      {t(lang, "planned")}
-                    </th>
-
-                    <th className="px-5 py-3 text-right font-medium">
-                      {t(lang, "done")}
-                    </th>
-
-                    <th className="px-5 py-3 font-medium">
-                      {t(lang, "progress")}
-                    </th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {work.map((w) => {
-                    const p = w.planned
-                      ? Math.round(
-                          (w.done / w.planned) * 100
-                        )
-                      : 0;
-
-                    return (
-                      <tr
-                        key={w.id}
-                        className="border-b border-border last:border-0"
-                      >
-                        <td className="px-5 py-3">
-                          {lang === "mr"
-                            ? w.nameMr
-                            : w.name}
-                        </td>
-
-                        <td className="px-5 py-3 text-muted">
-                          {w.unit}
-                        </td>
-
-                        <td className="px-5 py-3 text-right font-mono tabular-nums">
-                          {formatNumber(w.planned)}
-                        </td>
-
-                        <td className="px-5 py-3 text-right font-mono tabular-nums">
-                          {formatNumber(w.done)}
-                        </td>
-
-                        <td className="px-5 py-3">
-                          <div className="flex items-center gap-2">
-                            <Progress
-                              value={p}
-                              className="w-24"
-                            />
-
-                            <span className="w-10 text-right font-mono text-xs tabular-nums">
-                              {p}%
-                            </span>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* DPR */}
-        <TabsContent value="dpr">
-          <div className="grid gap-3">
-            {dprs.map((d) => (
-              <Card key={d.id}>
-                <CardContent>
-                  <p className="text-xs text-muted">
-                    {formatDate(d.date, lang)}
-                  </p>
-
-                  <p className="mt-1 text-sm">
-                    {lang === "mr"
-                      ? d.workSummaryMr
-                      : d.workSummary}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        {/* MATERIALS */}
-        <TabsContent value="materials">
-          <Card>
-            <CardContent className="overflow-x-auto p-0">
-              <table className="w-full text-sm">
-                <thead className="text-left text-xs text-muted">
-                  <tr className="border-b border-border">
-                    <th className="px-5 py-3 font-medium">
-                      {t(lang, "item")}
-                    </th>
-
-                    <th className="px-5 py-3 text-right font-medium">
-                      {t(lang, "balance")}
-                    </th>
-
-                    <th className="px-5 py-3 font-medium">
-                      {t(lang, "unit")}
-                    </th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {materials.map((m) => {
-                    const bal = materialBalance(m);
-                    const low =
-                      bal <= m.reorderAt;
-
-                    return (
-                      <tr
-                        key={m.id}
-                        className="border-b border-border last:border-0"
-                      >
-                        <td className="px-5 py-3">
-                          {lang === "mr"
-                            ? m.nameMr
-                            : m.name}
-                        </td>
-
-                        <td
-                          className={`px-5 py-3 text-right font-mono tabular-nums ${
-                            low ? "text-danger" : ""
-                          }`}
-                        >
-                          {formatNumber(bal)}
-                        </td>
-
-                        <td className="px-5 py-3 text-muted">
-                          {m.unit}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* LABOR */}
-        <TabsContent value="labor">
-          <Card>
-            <CardContent className="divide-y divide-border p-0">
-              {labor.slice(0, 12).map((l) => (
-                <div
-                  key={l.id}
-                  className="flex items-center justify-between px-5 py-3 text-sm"
-                >
+              <CardContent className="p-4">
+                                <div className="flex items-start justify-between gap-2">
                   <div>
-                    <p>
-                      {lang === "mr"
-                        ? l.tradeMr
-                        : l.trade}
+                    <h2 className="font-semibold">
+                      {siteName(site, lang)}
+                    </h2>
+
+                    <p className="mt-1 text-sm text-muted">
+                      {siteLocation(site, lang)}
                     </p>
 
                     <p className="text-xs text-muted">
-                      {formatDate(l.date, lang)}
+                      {siteType(site, lang)}
                     </p>
                   </div>
 
-                  <p className="font-mono tabular-nums">
-                    {l.present}/{l.planned}
-                  </p>
+                  <SiteStatusBadge
+                    status={site.status}
+                    lang={lang}
+                  />
                 </div>
-              ))}
-            </CardContent>
-          </Card>
-        </TabsContent>
 
-        {/* QUALITY */}
-        <TabsContent value="quality">
-          <div className="grid gap-3">
-            {quality.map((q) => (
-              <Card key={q.id}>
-                <CardContent className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-medium">
-                      {lang === "mr"
-                        ? q.titleMr
-                        : q.title}
-                    </p>
+                <div className="mt-4 flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      setEditSite(site);
+                      setSiteOpen(true);
+                    }}
+                  >
+                    Edit
+                  </Button>
 
-                    <p className="text-sm text-muted">
-                      {q.location} ·{" "}
-                      {formatDate(q.date, lang)}
-                    </p>
-                  </div>
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      const ok = confirm(
+                        "Delete this site and all related data?"
+                      );
 
-                  <QualityBadge
-                    result={q.result}
-                    lang={lang}
-                  />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
+                      if (ok) {
+                        deleteSite(site.id);
+                      }
+                    }}
+                  >
+                    Delete
+                  </Button>
+                </div>
 
-        {/* SAFETY */}
-        <TabsContent value="safety">
-          <div className="grid gap-3">
-            {safety.map((s) => (
-              <Card key={s.id}>
-                <CardContent className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-medium">
-                      {lang === "mr"
-                        ? s.titleMr
-                        : s.title}
-                    </p>
+                <div className="mt-2">
+                  <Button
+                    className="w-full"
+                    onClick={() => {
+                      window.location.assign(
+                        `/sites/${site.id}`
+                      );
+                    }}
+                  >
+                    Open Site
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+      <AddSiteDialog
+        open={siteOpen}
+        onOpenChange={(open) => {
+          setSiteOpen(open);
 
-                    <p className="text-sm text-muted">
-                      {s.action}
-                    </p>
-                  </div>
-
-                  <SafetyTypeBadge
-                    type={s.type}
-                    lang={lang}
-                  />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        {/* ISSUES */}
-        <TabsContent value="issues">
-          <div className="grid gap-3">
-            {issues.map((i) => (
-              <Card key={i.id}>
-                <CardContent className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-medium">
-                      {lang === "mr"
-                        ? i.titleMr
-                        : i.title}
-                    </p>
-
-                    <p className="text-sm text-muted">
-                      {i.location} · {i.assignee}
-                    </p>
-                  </div>
-
-                  <div className="flex flex-col items-end gap-1">
-                    <IssueTone
-                      severity={i.severity}
-                      lang={lang}
-                    />
-
-                    <IssueStatusBadge
-                      status={i.status}
-                      lang={lang}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
-
-      <AddDprDialog
-        open={dprOpen}
-        onOpenChange={setDprOpen}
-        defaultSiteId={site.id}
+          if (!open) {
+            setEditSite(null);
+          }
+        }}
+        editSite={editSite}
       />
-
-      <AddIssueDialog
-        open={issueOpen}
-        onOpenChange={setIssueOpen}
-      />
-    </div>
-  );
-}
-
-function Meta({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div>
-      <p className="text-xs tracking-wide text-muted">
-        {label}
-      </p>
-
-      <p className="mt-0.5 text-sm font-medium">
-        {value}
-      </p>
     </div>
   );
 }

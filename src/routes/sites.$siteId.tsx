@@ -1,8 +1,14 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, MapPin } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 
-import { AddDprDialog, AddIssueDialog } from "@/components/forms";
+import {
+  AddDprDialog,
+  AddIssueDialog,
+  AddSiteDialog,
+} from "@/components/forms";
+
 import {
   IssueStatusBadge,
   IssueTone,
@@ -10,19 +16,37 @@ import {
   SafetyTypeBadge,
   SiteStatusBadge,
 } from "@/components/status-badge";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import { daysUntil, formatDate, formatNumber } from "@/lib/format";
+
+import {
+  daysUntil,
+  formatDate,
+  formatNumber,
+} from "@/lib/format";
+
 import { t } from "@/lib/i18n";
-import { siteLocation, siteName, siteType } from "@/lib/names";
-import { materialBalance, siteProgress, useSthal } from "@/lib/store";
+
+import {
+  siteLocation,
+  siteName,
+  siteType,
+} from "@/lib/names";
+
+import {
+  materialBalance,
+  siteProgress,
+  useSthal,
+} from "@/lib/store";
 
 export const Route = createFileRoute("/sites/$siteId")({
   component: SiteDetail,
@@ -37,45 +61,59 @@ function SiteDetail() {
     s.sites.find((x) => x.id === siteId)
   );
 
-  const updateSite = useSthal((s) => s.updateSite);
   const deleteSite = useSthal((s) => s.deleteSite);
 
-  const work = useSthal((s) =>
-    s.work.filter((w) => w.siteId === siteId)
+  const work = useSthal(
+    useShallow((s) =>
+      s.work.filter((w) => w.siteId === siteId)
+    )
   );
 
-  const materials = useSthal((s) =>
-    s.materials.filter((m) => m.siteId === siteId)
+  const materials = useSthal(
+    useShallow((s) =>
+      s.materials.filter((m) => m.siteId === siteId)
+    )
   );
 
-  const dprs = useSthal((s) =>
-    s.dprs.filter((d) => d.siteId === siteId)
+  const dprs = useSthal(
+    useShallow((s) =>
+      s.dprs.filter((d) => d.siteId === siteId)
+    )
   );
 
-  const issues = useSthal((s) =>
-    s.issues.filter((i) => i.siteId === siteId)
+  const issues = useSthal(
+    useShallow((s) =>
+      s.issues.filter((i) => i.siteId === siteId)
+    )
   );
 
-  const quality = useSthal((s) =>
-    s.quality.filter((q) => q.siteId === siteId)
+  const quality = useSthal(
+    useShallow((s) =>
+      s.quality.filter((q) => q.siteId === siteId)
+    )
   );
 
-  const safety = useSthal((s) =>
-    s.safety.filter((x) => x.siteId === siteId)
+  const safety = useSthal(
+    useShallow((s) =>
+      s.safety.filter((x) => x.siteId === siteId)
+    )
   );
 
-  const labor = useSthal((s) =>
-    s.labor.filter((l) => l.siteId === siteId)
+  const labor = useSthal(
+    useShallow((s) =>
+      s.labor.filter((l) => l.siteId === siteId)
+    )
   );
 
   const [dprOpen, setDprOpen] = useState(false);
   const [issueOpen, setIssueOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
 
   if (!site) {
     return (
       <div className="py-16 text-center">
         <p className="text-muted">
-          {t(lang, "noneMatch")}
+          Site not found
         </p>
 
         <Link
@@ -90,11 +128,15 @@ function SiteDetail() {
 
   const pct = siteProgress(work, site.id);
   const left = daysUntil(site.targetDate);
+
   const scope =
-    lang === "mr" ? site.scopeMr : site.scope;
+    lang === "mr"
+      ? site.scopeMr
+      : site.scope;
 
   return (
     <div>
+      {/* BACK */}
       <Link
         to="/sites"
         className="mb-4 inline-flex h-11 items-center gap-1 text-sm text-muted hover:text-ink"
@@ -103,7 +145,10 @@ function SiteDetail() {
         {t(lang, "sites")}
       </Link>
 
+      {/* SITE HEADER */}
       <div className="overflow-hidden rounded-xl bg-surface shadow-[var(--shadow-border)]">
+
+        {/* IMAGE */}
         <div className="relative h-44 overflow-hidden bg-sheet md:h-56">
           <img
             src={site.image}
@@ -112,10 +157,14 @@ function SiteDetail() {
           />
         </div>
 
+        {/* SITE INFORMATION */}
         <div className="p-5">
+
           <div className="flex flex-wrap items-start justify-between gap-3">
+
             <div>
               <div className="flex flex-wrap items-center gap-2">
+
                 <h1 className="font-display text-2xl font-semibold tracking-tight">
                   {siteName(site, lang)}
                 </h1>
@@ -124,32 +173,37 @@ function SiteDetail() {
                   status={site.status}
                   lang={lang}
                 />
+
               </div>
 
               <p className="mt-1 flex items-center gap-1 text-sm text-muted">
                 <MapPin className="size-3.5" />
-                {siteLocation(site, lang)} ·{" "}
+
+                {siteLocation(site, lang)}
+
+                {" · "}
+
                 {siteType(site, lang)}
               </p>
             </div>
 
-            {/* ACTION BUTTONS */}
+            {/* BUTTONS */}
             <div className="flex flex-wrap gap-2">
-              <button
-               type="button"
-               onClick={() => {
-               alert("EDIT WORKING");
-               }}
-               className="rounded-md border px-4 py-2 text-sm"
-             >
-           Edit
-           </button>
 
+              {/* EDIT */}
+              <Button
+                variant="outline"
+                onClick={() => setEditOpen(true)}
+              >
+                Edit
+              </Button>
+
+              {/* DELETE */}
               <Button
                 variant="outline"
                 onClick={() => {
                   const ok = confirm(
-                    "Delete this site?"
+                    "Delete this site and all related data?"
                   );
 
                   if (ok) {
@@ -161,6 +215,7 @@ function SiteDetail() {
                 Delete
               </Button>
 
+              {/* ADD ISSUE */}
               <Button
                 variant="outline"
                 onClick={() => setIssueOpen(true)}
@@ -168,19 +223,24 @@ function SiteDetail() {
                 {t(lang, "addIssue")}
               </Button>
 
+              {/* ADD DPR */}
               <Button
                 onClick={() => setDprOpen(true)}
               >
                 {t(lang, "logDpr")}
               </Button>
+
             </div>
           </div>
 
+          {/* SCOPE */}
           <p className="mt-4 text-sm text-muted">
             {scope}
           </p>
 
+          {/* PROGRESS */}
           <div className="mt-4 flex items-center gap-3">
+
             <Progress
               value={pct}
               className="flex-1"
@@ -189,18 +249,27 @@ function SiteDetail() {
             <span className="font-mono text-sm tabular-nums">
               {pct}%
             </span>
+
           </div>
 
+          {/* DAYS */}
           <p className="mt-2 text-xs text-muted">
             {left >= 0
               ? `${left} days remaining`
               : `${Math.abs(left)} days overdue`}
           </p>
+
         </div>
       </div>
 
-      <Tabs defaultValue="work" className="mt-6">
+      {/* TABS */}
+      <Tabs
+        defaultValue="work"
+        className="mt-6"
+      >
+
         <TabsList>
+
           <TabsTrigger value="work">
             {t(lang, "work")}
           </TabsTrigger>
@@ -228,15 +297,20 @@ function SiteDetail() {
           <TabsTrigger value="issues">
             {t(lang, "issues")}
           </TabsTrigger>
+
         </TabsList>
 
         {/* WORK */}
         <TabsContent value="work">
           <Card>
             <CardContent className="overflow-x-auto p-0">
+
               <table className="w-full text-sm">
+
                 <thead className="text-left text-xs tracking-wide text-muted">
+
                   <tr className="border-b border-border">
+
                     <th className="px-5 py-3 font-medium">
                       {t(lang, "name")}
                     </th>
@@ -256,11 +330,15 @@ function SiteDetail() {
                     <th className="px-5 py-3 font-medium">
                       {t(lang, "progress")}
                     </th>
+
                   </tr>
+
                 </thead>
 
                 <tbody>
+
                   {work.map((w) => {
+
                     const p = w.planned
                       ? Math.round(
                           (w.done / w.planned) * 100
@@ -272,6 +350,7 @@ function SiteDetail() {
                         key={w.id}
                         className="border-b border-border last:border-0"
                       >
+
                         <td className="px-5 py-3">
                           {lang === "mr"
                             ? w.nameMr
@@ -291,7 +370,9 @@ function SiteDetail() {
                         </td>
 
                         <td className="px-5 py-3">
+
                           <div className="flex items-center gap-2">
+
                             <Progress
                               value={p}
                               className="w-24"
@@ -300,23 +381,34 @@ function SiteDetail() {
                             <span className="w-10 text-right font-mono text-xs tabular-nums">
                               {p}%
                             </span>
+
                           </div>
+
                         </td>
+
                       </tr>
                     );
                   })}
+
                 </tbody>
+
               </table>
+
             </CardContent>
           </Card>
         </TabsContent>
 
         {/* DPR */}
         <TabsContent value="dpr">
+
           <div className="grid gap-3">
+
             {dprs.map((d) => (
+
               <Card key={d.id}>
+
                 <CardContent>
+
                   <p className="text-xs text-muted">
                     {formatDate(d.date, lang)}
                   </p>
@@ -326,19 +418,30 @@ function SiteDetail() {
                       ? d.workSummaryMr
                       : d.workSummary}
                   </p>
+
                 </CardContent>
+
               </Card>
+
             ))}
+
           </div>
+
         </TabsContent>
 
         {/* MATERIALS */}
         <TabsContent value="materials">
+
           <Card>
+
             <CardContent className="overflow-x-auto p-0">
+
               <table className="w-full text-sm">
+
                 <thead className="text-left text-xs text-muted">
+
                   <tr className="border-b border-border">
+
                     <th className="px-5 py-3 font-medium">
                       {t(lang, "item")}
                     </th>
@@ -350,12 +453,17 @@ function SiteDetail() {
                     <th className="px-5 py-3 font-medium">
                       {t(lang, "unit")}
                     </th>
+
                   </tr>
+
                 </thead>
 
                 <tbody>
+
                   {materials.map((m) => {
+
                     const bal = materialBalance(m);
+
                     const low =
                       bal <= m.reorderAt;
 
@@ -364,6 +472,7 @@ function SiteDetail() {
                         key={m.id}
                         className="border-b border-border last:border-0"
                       >
+
                         <td className="px-5 py-3">
                           {lang === "mr"
                             ? m.nameMr
@@ -381,25 +490,37 @@ function SiteDetail() {
                         <td className="px-5 py-3 text-muted">
                           {m.unit}
                         </td>
+
                       </tr>
                     );
                   })}
+
                 </tbody>
+
               </table>
+
             </CardContent>
+
           </Card>
+
         </TabsContent>
 
         {/* LABOR */}
         <TabsContent value="labor">
+
           <Card>
+
             <CardContent className="divide-y divide-border p-0">
+
               {labor.slice(0, 12).map((l) => (
+
                 <div
                   key={l.id}
                   className="flex items-center justify-between px-5 py-3 text-sm"
                 >
+
                   <div>
+
                     <p>
                       {lang === "mr"
                         ? l.tradeMr
@@ -409,24 +530,36 @@ function SiteDetail() {
                     <p className="text-xs text-muted">
                       {formatDate(l.date, lang)}
                     </p>
+
                   </div>
 
                   <p className="font-mono tabular-nums">
                     {l.present}/{l.planned}
                   </p>
+
                 </div>
+
               ))}
+
             </CardContent>
+
           </Card>
+
         </TabsContent>
 
         {/* QUALITY */}
         <TabsContent value="quality">
+
           <div className="grid gap-3">
+
             {quality.map((q) => (
+
               <Card key={q.id}>
+
                 <CardContent className="flex items-start justify-between gap-3">
+
                   <div>
+
                     <p className="font-medium">
                       {lang === "mr"
                         ? q.titleMr
@@ -437,25 +570,37 @@ function SiteDetail() {
                       {q.location} ·{" "}
                       {formatDate(q.date, lang)}
                     </p>
+
                   </div>
 
                   <QualityBadge
                     result={q.result}
                     lang={lang}
                   />
+
                 </CardContent>
+
               </Card>
+
             ))}
+
           </div>
+
         </TabsContent>
 
         {/* SAFETY */}
         <TabsContent value="safety">
+
           <div className="grid gap-3">
+
             {safety.map((s) => (
+
               <Card key={s.id}>
+
                 <CardContent className="flex items-start justify-between gap-3">
+
                   <div>
+
                     <p className="font-medium">
                       {lang === "mr"
                         ? s.titleMr
@@ -465,25 +610,37 @@ function SiteDetail() {
                     <p className="text-sm text-muted">
                       {s.action}
                     </p>
+
                   </div>
 
                   <SafetyTypeBadge
                     type={s.type}
                     lang={lang}
                   />
+
                 </CardContent>
+
               </Card>
+
             ))}
+
           </div>
+
         </TabsContent>
 
         {/* ISSUES */}
         <TabsContent value="issues">
+
           <div className="grid gap-3">
+
             {issues.map((i) => (
+
               <Card key={i.id}>
+
                 <CardContent className="flex items-start justify-between gap-3">
+
                   <div>
+
                     <p className="font-medium">
                       {lang === "mr"
                         ? i.titleMr
@@ -493,9 +650,11 @@ function SiteDetail() {
                     <p className="text-sm text-muted">
                       {i.location} · {i.assignee}
                     </p>
+
                   </div>
 
                   <div className="flex flex-col items-end gap-1">
+
                     <IssueTone
                       severity={i.severity}
                       lang={lang}
@@ -505,24 +664,41 @@ function SiteDetail() {
                       status={i.status}
                       lang={lang}
                     />
+
                   </div>
+
                 </CardContent>
+
               </Card>
+
             ))}
+
           </div>
+
         </TabsContent>
+
       </Tabs>
 
+      {/* EDIT SITE */}
+      <AddSiteDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        editSite={site}
+      />
+
+      {/* ADD DPR */}
       <AddDprDialog
         open={dprOpen}
         onOpenChange={setDprOpen}
         defaultSiteId={site.id}
       />
 
+      {/* ADD ISSUE */}
       <AddIssueDialog
         open={issueOpen}
         onOpenChange={setIssueOpen}
       />
+
     </div>
   );
 }

@@ -17,7 +17,7 @@ export const Route = createFileRoute("/quality")({ component: QualityPage });
 function QualityPage() {
   const lang = useSthal((s) => s.lang);
   const sites = useSthal((s) => s.sites);
-  const quality = useSthal((s) => s.quality);
+  const quality = useSthal(useShallow((s) => s.quality.filter((q) => q.siteId === siteId)));
   const siteFilter = useSthal((s) => s.siteFilter);
   const ids = filteredSiteIds(siteFilter, sites);
   const [open, setOpen] = useState(false);
