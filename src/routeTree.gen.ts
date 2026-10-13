@@ -13,9 +13,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as DprRouteImport } from './routes/dpr'
 import { Route as IssuesRouteImport } from './routes/issues'
 import { Route as LaborRouteImport } from './routes/labor'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as MaterialsRouteImport } from './routes/materials'
 import { Route as QualityRouteImport } from './routes/quality'
 import { Route as SafetyRouteImport } from './routes/safety'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SitesIndexRouteImport } from './routes/sites.index'
 import { Route as SitesSiteIdRouteImport } from './routes/sites.$siteId'
 
@@ -39,6 +41,11 @@ const LaborRoute = LaborRouteImport.update({
   path: '/labor',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MaterialsRoute = MaterialsRouteImport.update({
   id: '/materials',
   path: '/materials',
@@ -52,6 +59,11 @@ const QualityRoute = QualityRouteImport.update({
 const SafetyRoute = SafetyRouteImport.update({
   id: '/safety',
   path: '/safety',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SitesIndexRoute = SitesIndexRouteImport.update({
@@ -70,9 +82,11 @@ export interface FileRoutesByFullPath {
   '/dpr': typeof DprRoute
   '/issues': typeof IssuesRoute
   '/labor': typeof LaborRoute
+  '/login': typeof LoginRoute
   '/materials': typeof MaterialsRoute
   '/quality': typeof QualityRoute
   '/safety': typeof SafetyRoute
+  '/signup': typeof SignupRoute
   '/sites/$siteId': typeof SitesSiteIdRoute
   '/sites/': typeof SitesIndexRoute
 }
@@ -81,9 +95,11 @@ export interface FileRoutesByTo {
   '/dpr': typeof DprRoute
   '/issues': typeof IssuesRoute
   '/labor': typeof LaborRoute
+  '/login': typeof LoginRoute
   '/materials': typeof MaterialsRoute
   '/quality': typeof QualityRoute
   '/safety': typeof SafetyRoute
+  '/signup': typeof SignupRoute
   '/sites/$siteId': typeof SitesSiteIdRoute
   '/sites': typeof SitesIndexRoute
 }
@@ -93,9 +109,11 @@ export interface FileRoutesById {
   '/dpr': typeof DprRoute
   '/issues': typeof IssuesRoute
   '/labor': typeof LaborRoute
+  '/login': typeof LoginRoute
   '/materials': typeof MaterialsRoute
   '/quality': typeof QualityRoute
   '/safety': typeof SafetyRoute
+  '/signup': typeof SignupRoute
   '/sites/$siteId': typeof SitesSiteIdRoute
   '/sites/': typeof SitesIndexRoute
 }
@@ -106,9 +124,11 @@ export interface FileRouteTypes {
     | '/dpr'
     | '/issues'
     | '/labor'
+    | '/login'
     | '/materials'
     | '/quality'
     | '/safety'
+    | '/signup'
     | '/sites/$siteId'
     | '/sites/'
   fileRoutesByTo: FileRoutesByTo
@@ -117,9 +137,11 @@ export interface FileRouteTypes {
     | '/dpr'
     | '/issues'
     | '/labor'
+    | '/login'
     | '/materials'
     | '/quality'
     | '/safety'
+    | '/signup'
     | '/sites/$siteId'
     | '/sites'
   id:
@@ -128,9 +150,11 @@ export interface FileRouteTypes {
     | '/dpr'
     | '/issues'
     | '/labor'
+    | '/login'
     | '/materials'
     | '/quality'
     | '/safety'
+    | '/signup'
     | '/sites/$siteId'
     | '/sites/'
   fileRoutesById: FileRoutesById
@@ -140,9 +164,11 @@ export interface RootRouteChildren {
   DprRoute: typeof DprRoute
   IssuesRoute: typeof IssuesRoute
   LaborRoute: typeof LaborRoute
+  LoginRoute: typeof LoginRoute
   MaterialsRoute: typeof MaterialsRoute
   QualityRoute: typeof QualityRoute
   SafetyRoute: typeof SafetyRoute
+  SignupRoute: typeof SignupRoute
   SitesSiteIdRoute: typeof SitesSiteIdRoute
   SitesIndexRoute: typeof SitesIndexRoute
 }
@@ -177,6 +203,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LaborRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/materials': {
       id: '/materials'
       path: '/materials'
@@ -196,6 +229,13 @@ declare module '@tanstack/react-router' {
       path: '/safety'
       fullPath: '/safety'
       preLoaderRoute: typeof SafetyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sites/': {
@@ -220,9 +260,11 @@ const rootRouteChildren: RootRouteChildren = {
   DprRoute: DprRoute,
   IssuesRoute: IssuesRoute,
   LaborRoute: LaborRoute,
+  LoginRoute: LoginRoute,
   MaterialsRoute: MaterialsRoute,
   QualityRoute: QualityRoute,
   SafetyRoute: SafetyRoute,
+  SignupRoute: SignupRoute,
   SitesSiteIdRoute: SitesSiteIdRoute,
   SitesIndexRoute: SitesIndexRoute,
 }

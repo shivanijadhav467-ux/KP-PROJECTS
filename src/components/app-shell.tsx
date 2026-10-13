@@ -24,6 +24,8 @@ import {
 import { SitePicker } from "@/components/site-picker";
 import { t } from "@/lib/i18n";
 import { useSthal } from "@/lib/store";
+import { RedirectToSignIn } from "@/lib/auth/gates";
+import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -35,18 +37,34 @@ const NAV = [
 
 const MORE = [
   { to: "/materials", key: "materials" as const, icon: Package },
-  { to: "/labor", key: "labor" as const, icon: Users },
   { to: "/quality", key: "quality" as const, icon: ShieldCheck },
+  { to: "/labor", key: "labor" as const, icon: Users },
   { to: "/safety", key: "safety" as const, icon: HardHat },
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const { user, isPending } = useCurrentUserState();
+
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  console.log("APP SHELL PATH:", pathname);
+
+  if (pathname === "/login" || pathname === "/signup") {
+    return <>{children}</>;
+  }
+
+  if (isPending) {
+    return null;
+  }
+
+  if (!user) {
+    return <RedirectToSignIn />;
+  }
+
   const lang = useSthal((s) => s.lang);
   const setLang = useSthal((s) => s.setLang);
   const resetSample = useSthal((s) => s.resetSample);
   const setHydrated = useSthal((s) => s.setHydrated);
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-
+ 
   useEffect(() => {
     void Promise.resolve(useSthal.persist.rehydrate()).finally(() => {
       setHydrated(true);

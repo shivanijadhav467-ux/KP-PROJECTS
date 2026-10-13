@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus, ShieldCheck } from "lucide-react";
 import { AddQualityDialog } from "@/components/forms";
