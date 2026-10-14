@@ -124,7 +124,7 @@ const vercelOrigins = [
 
 const trustedOrigins: string[] = [
   ...(explicitBaseURL ? [explicitBaseURL] : []),
-  "https://kp-projects-3u6b.vercel.app",
+  "https://kp-projects.vercel.app",
   ...vercelOrigins,
   ...LOCAL_DEV_ORIGINS,
   ...(!explicitBaseURL
